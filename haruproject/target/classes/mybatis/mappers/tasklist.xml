@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tasklist">
+	
+	<!-- 테스크 리스트 조회 -->
+	<select id="selectTaskList" parameterType="long" resultType="tasklistvo">
+	    SELECT tasklist_no as taskListNo, 
+	           tasklist_name as taskListName,
+	           tasklist_order as taskListOrder,
+	           project_no as projectNo 
+	      FROM tasklist 
+	     WHERE project_no = #{projectNo}
+	       AND tasklist_state != 'F'
+	     ORDER BY tasklist_order
+	</select>
+	
+	<!-- 테스크 리스트 insert -->
+   <insert id="taskListAdd" parameterType="tasklistvo">
+    INSERT INTO tasklist (
+        tasklist_name, 
+        tasklist_order, 
+        project_no, 
+        tasklist_state
+    ) VALUES (
+        #{taskListName},     #{taskListOrder},    #{projectNo}, 
+        'T'
+    )
+	    <selectKey keyProperty="taskListNo" resultType="long" order="AFTER">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+   
+   <!-- 테스크 리스트 delete -->
+   <update id="taskListDelete" parameterType="long"> 
+      <![CDATA[ 
+         update tasklist
+         set tasklist_state = 'F'
+         where tasklist_no = #{taskListNo}
+      ]]>
+   </update>
+</mapper>

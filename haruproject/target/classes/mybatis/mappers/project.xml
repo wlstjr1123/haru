@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="project">
+
+	<!-- 프로젝트 생성, Project 테이블에 값만 들어가고 멤버 추가 x  -->
+	<insert id="projectinsert" parameterType="projectvo">
+		<![CDATA[
+			insert into project values(null,#{projectTitle},#{projectDesc},#{projectStart},#{projectEnd},'T',now());
+		]]>
+		<selectKey keyProperty="projectNo" resultType="long" order = "AFTER">
+			select last_insert_id()
+		</selectKey>
+	</insert>
+
+	<!-- O권한을 가진 유저(프로젝트 생성자) 프로젝트에 insert -->
+	<insert id="ownerprojectinsert" parameterType="projectvo">
+		<![CDATA[
+			insert into userproject values(#{userNo},#{projectNo},'O');
+		]]>
+	</insert>
+
+	<!-- 프로젝트 멤버추가(권한-M) -->
+	<insert id="memberprojectinsert" parameterType="map">
+		<![CDATA[
+			insert into userproject values(#{userNo},#{projectNo},'M');
+		]]>
+	</insert>
+	
+	<!-- 프로젝트 리스트 찾기 멤버 X -->
+	<select id="proejctlistselect" parameterType="long" resultType="projectvo">
+		<![CDATA[
+			select o.userNo as userNo, 
+	   u.user_name as userName, 
+       u.user_photo as userPhoto, 
+       up.project_no as projectNo, 
+       p.project_title as projectTitle, 
+       p.project_desc as projectDesc, 
+       date_format(p.project_start, '%Y-%m-%d') as projectStart, 
+       date_format(p.project_end, '%Y-%m-%d') as projectEnd, 
+       p.project_state as projectState, 
+	   date_format(p.project_regdate, '%Y-%m-%d') as projectRegDate,
+       up.ownership as ownerShip,
+	   o.ownerName as ownerName 
+			from userproject as up join user as u on up.user_no = u.user_no 
+			join project as p on up.project_no = p.project_no 
+			join (select up.project_no as project_no, u.user_name as ownerName, u.user_no as userNo from userproject as up join user as u 
+			on up.user_no = u.user_no 
+			where ownership='O') as o 
+			on up.project_no = o.project_no 
+			where up.user_no = #{authUserNo} and project_state='T' order by p.project_no desc;
+		]]>
+	</select>
+	<!-- 프로젝트 멤버 찾기 -->
+	<select id="proejctmemberlistselect" parameterType="long" resultType="uservo">
+		<![CDATA[
+			select u.user_no as userNo, u.user_regdate as userRegdate, u.user_email as userEmail, u.user_name as userName from userproject as up join user as u on up.user_no = u.user_no where up.project_no = #{projectNo} and up.ownership='M';
+		]]>
+	</select>
+	
+	<!-- 프로젝트 멤버 찾기 -->
+	<select id="proejctmemberAlllistselect" parameterType="long" resultType="uservo">
+		<![CDATA[
+			select u.user_no as userNo, u.user_regdate as userRegdate, u.user_email as userEmail, u.user_name as userName from userproject as up join user as u on up.user_no = u.user_no where up.project_no = #{projectNo}
+		]]>
+	</select>
+	
+	<!-- 프로젝트 생성 시 멤버 찾기 -->
+	<select id="projectmemberdetail" resultType="uservo">
+		<![CDATA[
+			select user_no as userNo, user_email as userEmail, user_name as userName, user_photo as userPhoto from user where user_state='T';
+		]]>
+	</select>
+	
+	<!-- 프로젝트 수정 (멤버 x) -->
+	<update id="projectupdate" parameterType="projectvo">
+		<![CDATA[
+			update project set project_title=#{projectTitle}, project_desc=#{projectDesc}, project_start=#{projectStart}, project_end=#{projectEnd} where project_no = #{projectNo};
+		]]>
+	</update>
+	
+	<!-- 멤버 초기화 시키기 -->
+	<delete id="projectmemberreset" parameterType="projectvo">
+		<![CDATA[
+			delete from userproject where project_no=#{projectNo} and ownership='M';
+		]]>
+	</delete>
+	
+	<!-- 프로젝트 삭제 -->
+	<update id="projectdelete" parameterType="projectvo">
+		<![CDATA[
+			update project set project_state='F' where project_no = #{projectNo};
+		]]>
+	</update>
+	
+</mapper> 

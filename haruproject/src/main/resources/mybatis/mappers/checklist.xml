@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 종윤 -->
+<mapper namespace="checklist">
+
+	<!-- 체크리스트 추가 -->
+	<insert id="insertChecklist" parameterType="checklistvo">
+		INSERT
+		  INTO checklist (checklist_contents,task_no)
+		VALUES (#{checklistContents}, #{taskNo});
+		<selectKey keyProperty="checklistNo" resultType="long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+
+	<!-- 체크리스트 삭제 -->
+	<delete id="deleteChecklist" parameterType="long">
+		DELETE FROM checklist
+		 WHERE checklist_no =	#{checklistNo}
+	</delete>
+
+	<!-- 체크리스트 수정 -->
+	<!-- 체크리스트 수정하는데 컨텐츠 내용이 비어있지 않으면 일딴 컨텐츠 내용을 수정하는거 -->
+	<!-- 체크리스트 수정하는데 컨텐츠 내용이 비어있으면 컨텐츠 상태를 수정하는거 -->
+	<update id="updateChecklist" parameterType="checklistvo">
+		UPDATE checklist
+		<set>
+			<if test="checklistContents != null and !checklistContents.equals('')">
+				checklist_contents = #{checklistContents}
+			</if>
+			<if test="checklistState != null and !checklistState.equals('')">
+				checklist_state = #{checklistState}
+			</if>
+		</set>
+		 WHERE checklist_no = #{checklistNo}
+	</update>
+
+	<!-- 체크리스트 불러오기 -->
+	<select id="selectCheckList" resultType="checklistvo">
+		SELECT checklist_no AS checklistNo,
+		checklist_contents AS checklistContents,
+		checklist_state AS checklistState,
+		task_no AS taskNo
+		FROM
+		checklist
+		WHERE task_no = #{taskNo}
+	</select>
+
+
+</mapper>

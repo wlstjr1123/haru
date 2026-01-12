@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="schedule">
+	<select id="schedulefindAll" parameterType="long" resultType="calendarvo">
+		<![CDATA[
+		select schedule_no as scheduleNo, user_no as userNo, schedule_start as scheduleStart, schedule_end as scheduleEnd, schedule_contents as scheduleContents from schedule where user_no = #{authUserNo};		
+		]]>
+	</select>
+	
+	<insert id="calendarscheduleadd" parameterType="calendarvo">
+		<![CDATA[
+			insert into schedule values(null, #{userNo}, #{scheduleStart}, #{scheduleEnd}, #{scheduleContents});
+		]]>
+		<selectKey keyProperty="scheduleNo" resultType="long" order="AFTER">
+			select last_insert_id()
+		</selectKey>
+	</insert>
+	
+	<select id="calendarscheduledetail" parameterType="long" resultType="calendarvo">
+		<![CDATA[
+			select schedule_no as scheduleNo, user_no as userNo, date_format(schedule_start, '%Y-%m-%d') as scheduleStart, date_format(schedule_end, '%Y-%m-%d') as scheduleEnd, schedule_contents as scheduleContents 
+			from schedule where schedule_no = #{scheduleNo};
+		]]>
+	</select>
+	
+	<update id="calendarscheduleupdate" parameterType="map">
+		<![CDATA[
+			update schedule set schedule_contents = #{scheduleContents}, schedule_start = #{scheduleStart}, schedule_end = #{scheduleEnd} where schedule_no = #{scheduleNo}; 
+		]]>
+	</update>
+	
+	<select id="taskfindAll" parameterType="long" resultType="taskvo">
+		<![CDATA[
+select t.tasklist_no as taskListNo, t.task_no as taskNo, t.task_contents as taskContents, date_format(t.task_start, '%Y-%m-%d') as taskStart, date_format(t.task_end, '%Y-%m-%d') as taskEnd, t.task_label as taskLabel, t.task_state as taskState, t.task_order as taskOrder, t.task_writer as taskWriter, p.project_title as projectTitle 
+from taskuser as tu join task as t  on tu.task_no = t.task_no join tasklist as tl on t.tasklist_no = tl.tasklist_no join project as p on tl.project_no=p.project_no where tu.user_no = #{authUserNo} and task_state='do';
+		]]>
+	</select>
+	
+	<delete id="calendarscheduledelete" parameterType="long">
+		<![CDATA[
+			delete from schedule where schedule_no=#{scheduleNo};
+		]]>
+	</delete>
+	
+	<update id="dragupdate" parameterType="calendarvo">
+		<![CDATA[
+			update schedule set schedule_start=#{scheduleStart}, schedule_end=#{scheduleEnd} where schedule_no=#{scheduleNo};
+		]]>
+	</update>
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="task">
+	
+	<insert id="taskUserAdd" parameterType="map">
+		<![CDATA[
+			insert into taskuser values(#{userNo}, #{taskNo})
+		]]>
+	</insert>
+	
+	<!-- 테스크 추가 -->
+	<insert id="taskAdd" parameterType="taskvo">
+	    INSERT INTO task (
+	        tasklist_no,     
+	        task_name,       
+	        task_regdate,    
+	        task_updatedate, 
+	        task_label,      
+	        task_state,      
+	        task_contents,   
+	        task_order,      
+	        task_end,        
+	        task_writer      
+	    ) VALUES (
+	        #{taskListNo}, 
+	        #{taskName}, 
+	        NOW(), 
+	        NOW(), 
+	        '#777777', 
+	        'do', 
+	        #{taskContents}, 
+	        #{taskOrder}, 
+	        NOW(), 
+	        #{taskWriter}
+	    )
+	    <selectKey keyProperty="taskNo" resultType="long" order="AFTER">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+	
+	<!-- 테스크 삭제 -->
+	<update id="taskDelete" parameterType="Long">
+   		<![CDATA[
+			update task
+			set task_state = 'del'
+			where task_no = #{taskNo}	
+   		]]>	
+   </update>
+   
+   <!-- 테스트 리스트 삭제시 -->
+   <update id="taskDeleteByTaskList" parameterType="Long">
+   		<![CDATA[
+			update task
+			set task_state = 'del'
+			where tasklist_no = #{taskListNo}	
+   		]]>	
+   </update>
+   
+   <!-- 테스크 모두 가져오기 -->
+   <!-- 종윤(사용) -->
+   <select id="taskAllSelect" parameterType="map" resultType="taskvo">
+   		select t.tasklist_no as tasklistNo,
+						task_no as taskNo,
+        		task_name as taskName,
+        		task_start as taskStart,
+        		task_end as taskEnd,
+        		task_label as taskLabel,
+        		task_state as taskState,
+        		task_contents as taskContents,
+        		task_order as taskOrder,
+        		task_regdate as taskRegdate,
+        		task_writer as taskWriter
+			from task t join tasklist tl on t.tasklist_no = tl.tasklist_no
+		where project_no = #{projectNo}
+			and tl.tasklist_no = #{tasklistNo}
+			and task_state != 'del'
+		order by t.task_order
+   </select>
+   
+   <update id="taskDropUpdate" parameterType="map">
+   		update task
+   			set tasklist_no = #{tasklistNo}, task_order=#{taskOrder}
+   		where task_no = #{taskNo}
+   </update>
+</mapper>

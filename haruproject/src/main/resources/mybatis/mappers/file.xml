@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 종윤 -->
+<mapper namespace="file">
+	
+	<!-- 프로젝트 별 파일 select -->
+	<select id="selectFile" parameterType="long" resultType="filevo">
+		SELECT DISTINCT
+					 p.project_no AS projectNo,
+					 p.project_title AS projectTitle,
+					 tl.tasklist_no AS tasklistNo,
+					 tl.tasklist_name AS tasklistName,
+					 t.task_no AS taskNo,
+					 t.task_name AS taskName,
+					 t.task_contents AS taskContents,
+					 t.task_state AS taskState,
+					 f.file_no AS fileNo,
+					 f.file_path AS filePath, 
+					 f.origin_name AS originName,
+					 DATE_FORMAT(f.file_regdate, '%Y년 %m월 %d일') AS fileRegdate,
+					 f.file_state AS fileState,
+					 f.file_maker AS fileMaker
+		  FROM project p
+		  JOIN tasklist tl ON (p.project_no = tl.project_no)
+		  JOIN task t ON (tl.tasklist_no = t.tasklist_no)
+		  JOIN file f ON (t.task_no = f.task_no)
+		 WHERE p.project_no=#{projectNo} AND t.task_state!='del' AND f.file_state = 'T';
+	</select>
+	
+
+	
+	<!-- Task 별 File select -->
+	<select id="selectFileList" parameterType="long" resultType="filevo">
+		SELECT DISTINCT
+		       t.task_no AS taskNo,
+		       f.file_no AS fileNo,
+		       f.origin_name AS originName,
+		       f.change_name AS changeName,
+		       f.file_path AS filePath,
+		       DATE_FORMAT(f.file_regdate, '%Y년 %m월 %d일') AS fileRegdate,
+		       f.file_maker AS fileMaker
+		  FROM file f join task t ON f.task_no = t.task_no
+		 WHERE f.task_no = #{taskNo} AND t.task_state!='del' AND f.file_state = 'T';
+	</select>
+	
+	<!-- 파일 추가 -->
+	<insert id="insertFile" parameterType="filevo">
+		INSERT
+			INTO file (task_no, origin_name, change_name, file_path, file_maker)
+		VALUES (#{taskNo}, #{originName}, #{changeName}, #{filePath}, #{fileMaker})
+	<selectKey keyProperty="fileNo" resultType="long" order="AFTER">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	</insert>
+	
+	<!-- 파일넘버로 찾기 -->
+	<select id="findByFileName" parameterType="long" resultType="string">
+		SELECT change_name as changeName
+		  FROM file
+		 WHERE file_no = #{fileNo}
+	</select>
+	
+	<!-- 파일 삭제 -->
+	<delete id="deleteFile" parameterType="long">
+		UPDATE file
+		   SET file_state = 'F'
+		 WHERE file_no = #{fileNo}
+	</delete>
+	
+	<select id="findNameByNo" parameterType="long" resultType="string">
+		 select user_Name AS userName
+		   from user  
+		  where user_No = #{userNo }
+	</select>
+	
+</mapper>

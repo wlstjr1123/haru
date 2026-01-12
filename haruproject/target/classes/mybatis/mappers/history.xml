@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="history">
+
+    <select id="selectHistory2" parameterType="long" resultType="historyvo">
+        SELECT h.log_no AS logNo, 
+               DATE_FORMAT(h.log_date, '%Y년 %m월 %d일') AS logDate, 
+               h.log_contents AS logContents, 
+               h.project_project_no AS projectNo, p.project_title AS projectTitle
+        FROM history AS h 
+        JOIN project AS p ON h.project_project_no = p.project_no WHERE h.project_project_no = #{projectNo} ORDER by h.log_no desc;
+    </select>
+    
+    <select id="selectHistory" parameterType="long" resultType="historyvo">
+        SELECT log_no AS logNo, 
+               log_date AS logDate, 
+               log_contents AS logContents, 
+               project_project_no AS projectNo FROM history
+         WHERE project_project_no = #{projectNo} ORDER by log_no desc;
+    </select>
+    
+    <insert id="insertHistory" parameterType="map">
+        INSERT INTO history (
+            project_project_no, log_contents
+        ) VALUES (
+            #{projectNo}, 
+            #{logContents}
+        );
+        <selectKey resultType="long" keyProperty="logNo" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    
+</mapper>

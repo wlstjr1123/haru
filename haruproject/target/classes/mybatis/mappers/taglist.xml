@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 종윤 -->
+<mapper namespace="taglist">
+
+   <!-- 테스크에 있는 태그 select -->
+	<select id="selectTag" parameterType="long" resultType="taglistvo">
+	    SELECT tl.tag_no AS tagNo, 
+	           tt.user_no AS taskNo,  tl.tag_name AS tagName, 
+	           tl.tag_color AS tagColor
+	      FROM tagtask tt 
+	      JOIN taglist tl ON tt.tag_no = tl.tag_no
+	     WHERE tt.user_no = #{taskNo} 
+     </select>
+  
+	<!-- 태크 리스트 불러오기 -->
+	<select id="selectTagList" resultType="taglistvo">
+		SELECT tag_no AS tagNo,
+		       tag_name AS tagName,
+			     tag_color AS tagColor
+	    FROM taglist;
+	</select>
+	
+	<!-- 태그리스트에 태그 추가  -->
+	<insert id="insertTagList" parameterType="taglistvo">
+		INSERT
+		  INTO taglist (tag_name, tag_color) 
+		VALUES (#{tagName}, #{tagColor});
+    <selectKey keyProperty = "tagNo" resultType="long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+	</selectKey>
+  </insert>
+   
+   <!-- 태그리스트의 태그 삭제  -->
+	<delete id="deleteTagList" parameterType="taglistvo">
+  	DELETE
+  	  FROM taglist
+  	 WHERE tag_no = #{tagNo}
+	</delete>
+	
+  <!-- 업무에 태그 추가  -->
+	<insert id="insertTaskTag" parameterType="taglistvo">
+	    INSERT INTO tagtask
+	    VALUES (#{tagNo}, #{taskNo}) 
+    </insert>
+   
+   
+  <!-- 업무에서 태그 삭제  -->
+  <delete id="deleteTaskTag" parameterType="taglistvo">
+  	DELETE
+  	  FROM tagtask
+  	 WHERE tag_no = #{tagNo} AND task_no = #{taskNo}
+  </delete>
+   
+  <!-- 모든 업무에서 태그 삭제 -->
+  <delete id="deletAllTaskTag" parameterType="taglistvo">
+  	DELETE
+  	  FROM tagtask
+  	 WHERE tag_no = #{tagNo}
+  </delete>
+  
+
+  
+  <!-- 업무  태그 리스트 수정 -->
+  <update id="updateTag" parameterType="taglistvo">
+		UPDATE taglist 
+		   SET tag_name=#{tagName}, tag_color=#{tagColor} 
+		 WHERE tag_no=#{tagNo}
+	</update>
+</mapper>

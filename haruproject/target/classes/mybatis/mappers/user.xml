@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="user">
+
+	<insert id="addUser" parameterType="uservo">
+		<![CDATA[
+		insert
+  	      into user(user_email, user_name, user_password, user_number, user_birth, user_title, user_dept, user_photo, user_bg, user_key)
+		values (#{userEmail}, #{userName}, #{userPassword}, null, null, null, null, "/assets/upUserimages/Default.png", null, #{userKey});
+		]]>
+		<selectKey keyProperty="userNo" resultType="long"
+			order="AFTER">
+			select last_insert_id()
+		</selectKey>
+	</insert>
+
+	<!-- 로그인시 사용하는 쿼리 -->
+	<select id="findByUsername" parameterType="string" resultType="uservo">
+		select user_no as userNo, user_email as userEmail, user_name as userName, user_password as userPassword, user_key_status as userKeyState,user_photo as userPhoto
+		from user 
+		where user_email=#{userEmail}
+	</select>
+	
+	<!-- 비밀번호 확인 쿼리 -->
+	<select id="findUserByPassword" parameterType="string">
+		select user_no from user where user_Password=#{userPassword} 
+	</select>
+
+	<!-- 사용자 프로필 가져오는 쿼리 -->
+	<select id="findUserProfile" parameterType="string" resultType="uservo">
+		select user_name as userName, user_title as userTitle, user_dept as userDept, user_photo as userPhoto
+		from user
+		where user_email =#{userEmail}
+	</select>
+	
+	<update id="updateProfile" parameterType="uservo">
+		update user set user_name=#{userName}, user_title=#{userTitle}, user_dept=#{userDept} where user_email=#{userEmail};
+	</update>
+
+	<update id="updateProfileImg" parameterType="uservo">
+		update user set user_photo=#{userPhoto} where user_email=#{userEmail}
+	</update>
+	<!-- 회원인증시 사용하는 쿼리 -->
+	<select id="findUserBykey" parameterType="string" resultType="uservo">
+		select user_name as userName, user_email as userEmail from user where user_key= #{key}
+	</select>
+	
+	<update id="updateUserAuth" parameterType="uservo">
+		update user set user_key_status="T" where user_name=#{userName} and user_email=#{userEmail}
+	</update>
+	
+
+	<!-- 비밀번호 변경 이메일 전송시 사용하는 쿼리 -->
+	<select id="findEmailById" parameterType="string"
+		resultType="uservo">
+		select user_email as userEmail, user_name as userName from user where user_email= #{userEmail}
+	</select>
+	<!-- 임시비밀번호 저장 쿼리 -->
+	<update id="updateUserPassword" parameterType="uservo">
+		update user set user_password=#{userPassword} where user_name=#{userName} and user_email=#{userEmail}
+	</update>
+
+	<!-- 비밀번호 변경시 사용하는 쿼리 -->
+	<update id="updatePassword" parameterType="uservo">
+		update user set user_password=#{userPassword} where user_email=#{userEmail} and user_no=#{userNo}
+	</update>
+	
+	<!--계정 삭제시 사용자 상태 비활성화 쿼리 -->
+	<update id="deleteUser" parameterType="uservo">
+		update user set user_key_status="F", user_key=""
+		 where user_no=#{userNo}
+		   and user_email=#{userEmail}
+		   and user_password=#{userPassword}
+	</update>
+	
+
+</mapper>

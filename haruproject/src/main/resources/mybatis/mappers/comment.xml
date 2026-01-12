@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 종윤 -->
+<mapper namespace="comment">
+	
+	<!-- task comment 불러오기 -->
+	<select id="selectComments" parameterType="long" resultType="commentvo">
+		SELECT DISTINCT
+		       u.user_no as userNo,
+		       u.user_name as userName,
+		       u.user_photo as userPhoto,
+		       u.user_Email as userEmail,
+		       c.comment_no as commentNo,
+		       DATE_FORMAT(c.comment_regdate, '%Y년 %m월 %d일') as commentRegdate,
+		       c.comment_contents as commentContents
+		 FROM comment c
+		 JOIN task t ON c.task_no = t.task_no
+		 JOIN user u ON c.user_no = u.user_no
+		WHERE c.task_no = #{taskNo} AND t.task_state!='del' AND c.comment_state = 'T';
+	</select>
+	
+	<!-- task comment 입력 -->
+	<insert id="insertComment" parameterType="commentvo">
+		INSERT
+		  INTO comment (user_no,task_no,comment_contents)
+		VALUES (#{userNo},#{taskNo},#{commentContents});
+		<selectKey keyProperty="commentNo" resultType="long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+
+<!-- task comment 수정 -->
+	<update id="updateCommentContents" parameterType="commentvo">
+		UPDATE comment
+		   SET comment_contents = #{commentContents}
+		 WHERE comment_no = #{commentNo}
+	</update>
+	
+	<!-- task comment 삭제 -->
+	<delete id="deleteComment" parameterType="long">
+		UPDATE comment
+		   SET comment_state='F'
+		 WHERE comment_no = #{commentNo}
+	</delete>
+	
+</mapper>

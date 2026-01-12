@@ -1,0 +1,102 @@
+# active spring boot profile
+# profile ==> profiles
+spring:
+   profiles:
+      active: dev     
+
+---
+# common - spring configuration
+spring:
+
+   # devtools - live reload
+   devtools:
+      livereload:
+         enabled: true
+
+   # Mail
+   mail:
+      host: smtp.gmail.com
+      port: 587
+      username: 'wlstjr3057@gamil.com'
+      password: 'hnmmlvzxpffspzkb'
+      properties:
+         mail:
+            smtp:
+               auth: true
+               ssl:
+                  protocols: 'TLSv1.2'
+               starttls:
+                  enable: true
+            debug: smtp
+
+   # mvc
+   mvc:
+      view:
+         prefix: /WEB-INF/views/
+         suffix: .jsp
+
+   # message resource(Internationalization)
+   messages:
+      always-use-message-format: true
+      basename: messages/message_ko
+      encoding: utf-8
+
+   # http
+   # spring.http.encoding ==> server.servlet.encoding
+   
+   #multipart
+   servlet:
+      multipart:
+         enabled: true
+         max-file-size: 50MB
+         max-request-size: 50MB
+         
+   # aop(@EnableAspectJAutoProxy)
+   # aop.auto ↓↓↓
+   aop:
+      auto: true
+      proxy-target-class: true 
+
+---
+# dev profile - spring boot configuration
+# spring.profile ==> spring.profiles.group
+spring:
+   config:
+      activate:
+         on-profile: dev
+      
+   # datasource
+   # datasource.... ↓↓↓
+   datasource:
+      username: haru
+      password: haru
+      driver-class-name: org.mariadb.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/haru?characterEncoding=utf8
+      hikari:
+         minimum-idle: 10
+         maximum-pool-size: 20
+         
+         
+#   transaction:
+#    rollback-on-commit-failure:
+---
+# server
+server:
+   port: 8080
+   servlet:
+     context-path: /haru
+     encoding:
+        charset: utf-8
+        enabled: true
+        force: false
+        force-request: false
+        force-response: false
+        
+---
+# mybatis
+mybatis:
+   config-location: classpath:mybatis/configuration.xml
+---
+# logging
+logging:
+   config: classpath:logback.xml 
